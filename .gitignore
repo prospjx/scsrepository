@@ -1,0 +1,43 @@
+# Secrets & Sensitive Kubernetes manifests
+*secrets.yaml
+*.secret.yaml
+secrets/
+.env
+.env.*
+*.env
+
+# Python Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python Cache & Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Local SQLite Databases
+*.db
+*.sqlite3
+
+# OS & Editor configurations
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Terraform state (if local)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
