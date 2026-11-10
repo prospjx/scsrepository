@@ -9,25 +9,29 @@ from gateway import app
 
 BASE_DIR = Path(__file__).resolve().parent
 
+course_db_path = (BASE_DIR / "course.db").as_posix()
+student_db_path = (BASE_DIR / "student.db").as_posix()
+scheduler_db_path = (BASE_DIR / "scheduler.db").as_posix()
+
 SERVICES = [
     {
         "name": "courseapi",
         "dir": str(BASE_DIR / "courseapi"),
         "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8001"],
-        "env": {"DATABASE_URL": f"sqlite:///{str(BASE_DIR / 'course.db').replace('\\', '/')}"}
+        "env": {"DATABASE_URL": f"sqlite:///{course_db_path}"}
     },
     {
         "name": "studentapi",
         "dir": str(BASE_DIR / "studentapi"),
         "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8002"],
-        "env": {"DATABASE_URL": f"sqlite:///{str(BASE_DIR / 'student.db').replace('\\', '/')}"}
+        "env": {"DATABASE_URL": f"sqlite:///{student_db_path}"}
     },
     {
         "name": "schedulerapi",
         "dir": str(BASE_DIR / "schedulerapi"),
         "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8000"],
         "env": {
-            "DATABASE_URL": f"sqlite:///{str(BASE_DIR / 'scheduler.db').replace('\\', '/')}",
+            "DATABASE_URL": f"sqlite:///{scheduler_db_path}",
             "COURSE_API_URL": "http://127.0.0.1:8001",
             "STUDENT_API_URL": "http://127.0.0.1:8002",
             "AI_ASSISTANT_API_URL": "http://127.0.0.1:8003"
@@ -50,7 +54,6 @@ def start_services():
         print(f"Starting {s['name']} in {s['dir']}...")
         p = subprocess.Popen(s["cmd"], cwd=s["dir"], env=env)
         processes.append((s["name"], p))
-    # Give child services time to bind ports and seed data
     time.sleep(3)
 
 def cleanup(*args):
