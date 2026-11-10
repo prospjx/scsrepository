@@ -16,41 +16,36 @@ scheduler_db_path = (BASE_DIR / "scheduler.db").as_posix()
 SERVICES = [
     {
         "name": "courseapi",
-        "dir": str(BASE_DIR / "courseapi"),
-        "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8001"],
+        "app_dir": str(BASE_DIR / "courseapi"),
+        "port": "8001",
         "env": {
             "DATABASE_URL": f"sqlite:///{course_db_path}",
-            "PYTHONPATH": str(BASE_DIR / "courseapi")
         }
     },
     {
         "name": "studentapi",
-        "dir": str(BASE_DIR / "studentapi"),
-        "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8002"],
+        "app_dir": str(BASE_DIR / "studentapi"),
+        "port": "8002",
         "env": {
             "DATABASE_URL": f"sqlite:///{student_db_path}",
-            "PYTHONPATH": str(BASE_DIR / "studentapi")
         }
     },
     {
         "name": "schedulerapi",
-        "dir": str(BASE_DIR / "schedulerapi"),
-        "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8000"],
+        "app_dir": str(BASE_DIR / "schedulerapi"),
+        "port": "8000",
         "env": {
             "DATABASE_URL": f"sqlite:///{scheduler_db_path}",
             "COURSE_API_URL": "http://127.0.0.1:8001",
             "STUDENT_API_URL": "http://127.0.0.1:8002",
             "AI_ASSISTANT_API_URL": "http://127.0.0.1:8003",
-            "PYTHONPATH": str(BASE_DIR / "schedulerapi")
         }
     },
     {
         "name": "ai-assistant-api",
-        "dir": str(BASE_DIR / "ai-assistant-api"),
-        "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8003"],
-        "env": {
-            "PYTHONPATH": str(BASE_DIR / "ai-assistant-api")
-        }
+        "app_dir": str(BASE_DIR / "ai-assistant-api"),
+        "port": "8003",
+        "env": {}
     }
 ]
 
@@ -60,8 +55,20 @@ def start_services():
     for s in SERVICES:
         env = os.environ.copy()
         env.update(s["env"])
-        print(f"Starting {s['name']} with PYTHONPATH={s['env']['PYTHONPATH']}...", flush=True)
-        p = subprocess.Popen(s["cmd"], cwd=s["dir"], env=env)
+        cmd = [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "--app-dir",
+            s["app_dir"],
+            "src.main:app",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            s["port"]
+        ]
+        print(f"Starting {s['name']} on port {s['port']} with --app-dir {s['app_dir']}...", flush=True)
+        p = subprocess.Popen(cmd, cwd=s["app_dir"], env=env)
         processes.append((s["name"], p))
     time.sleep(4)
 
