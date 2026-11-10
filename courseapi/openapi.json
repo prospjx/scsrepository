@@ -1,0 +1,119 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Course API",
+    "version": "1.0.0",
+    "description": "API contract for the Smart Course Scheduler - Course API. Manages course catalog and metadata."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/courses": {
+      "get": {
+        "summary": "Get all courses",
+        "description": "Retrieves a list of all courses available in the catalog.",
+        "responses": {
+          "200": {
+            "description": "A list of courses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Course"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}": {
+      "get": {
+        "summary": "Get course details",
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Course"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Course": {
+        "type": "object",
+        "properties": {
+          "course_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "credits": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timeslots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Timeslot"
+            }
+          }
+        }
+      },
+      "Timeslot": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "example": "Monday"
+          },
+          "start_time": {
+            "type": "string",
+            "example": "10:00"
+          },
+          "end_time": {
+            "type": "string",
+            "example": "11:15"
+          },
+          "location": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+[tool.ruff.lint]
+ignore = [
+    "B008", # Do not perform function call `Depends` in argument defaults (standard FastAPI pattern)
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+

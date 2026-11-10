@@ -1,0 +1,34 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/prospjx/student-api
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets:
+  - name: ghcr-secret
+
+nameOverride: ""
+fullnameOverride: "studentapi-deployment"
+appLabel: "studentapi"
+
+service:
+  type: ClusterIP
+  port: 8002
+  targetPort: 8002
+  name: studentapi-service
+
+postgres:
+  user: "postgres"
+  database: "studentdb"
+  password: "postgres"
+  host: "postgres-service"
+  port: 5432
+
+configMap:
+  name: studentapi-configmap
+
+secret:
+  name: studentapi-secret
+
+resources: {}

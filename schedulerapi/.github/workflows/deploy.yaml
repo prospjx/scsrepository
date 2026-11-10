@@ -1,0 +1,40 @@
+name: SchedulerAPI CD
+
+on:
+  workflow_run:
+    workflows: ["SchedulerAPI CI"]
+    types:
+      - completed
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout GitOps Repository
+        uses: actions/checkout@v4
+        with:
+          repository: prospjx/gitops
+          token: ${{ secrets.GITOPS_PAT }}
+          ref: master
+
+      - name: Update SchedulerAPI Image Tag
+        run: |
+          IMAGE_TAG="v${{ github.event.workflow_run.run_number }}"
+          echo "Updating schedulerapi image tag to: $IMAGE_TAG"
+          sed -i "s/tag: .*/tag: \"$IMAGE_TAG\"/" charts/schedulerapi/values.yaml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add charts/schedulerapi/values.yaml
+          if git diff --staged --quiet; then
+            echo "No changes in image tag."
+          else
+            git commit -m "chore(schedulerapi): bump image tag to $IMAGE_TAG"
+            git push origin master
+          fi

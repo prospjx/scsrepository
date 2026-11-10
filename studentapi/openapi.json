@@ -1,0 +1,119 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Student API",
+    "version": "1.0.0",
+    "description": "API contract for the Smart Course Scheduler - Student API. Manages student profiles and preferences."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/students/{student_id}": {
+      "get": {
+        "summary": "Get student profile",
+        "description": "Retrieves the profile and scheduling preferences for a student.",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Student profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentProfile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update student preferences",
+        "description": "Updates a student's preferences regarding workload, times, and difficulty.",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentProfile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "StudentProfile": {
+        "type": "object",
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "max_credits_per_term": {
+                "type": "integer",
+                "example": 18
+              },
+              "preferred_days_off": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": ["Friday"]
+              },
+              "difficulty_tolerance": {
+                "type": "string",
+                "enum": ["low", "medium", "high"],
+                "example": "medium"
+              },
+              "preferred_time_of_day": {
+                "type": "string",
+                "enum": ["morning", "afternoon", "evening", "any"],
+                "example": "morning"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

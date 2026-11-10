@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: studentapi-service
+  labels:
+    app: studentapi
+spec:
+  selector:
+    app: studentapi
+  ports:
+    - name: studentapi-service
+      protocol: TCP
+      targetPort: 8002
+      port: 8002
