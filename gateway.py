@@ -9,7 +9,7 @@ app = FastAPI(
     description="Unified API Gateway routing to SCS microservices.",
 )
 
-# Enable CORS for GitHub Pages, Vercel, or custom domains
+# Enable CORS for all origins, methods, and headers
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,19 +27,27 @@ async def forward_request(target_url: str, request: Request, timeout: float = 30
     body = await request.body()
     headers = {k: v for k, v in request.headers.items() if k.lower() != "host"}
     
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        rp = await client.request(
-            method=request.method,
-            url=target_url,
-            headers=headers,
-            content=body,
-            params=dict(request.query_params),
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            rp = await client.request(
+                method=request.method,
+                url=target_url,
+                headers=headers,
+                content=body,
+                params=dict(request.query_params),
+            )
+        return Response(
+            content=rp.content,
+            status_code=rp.status_code,
+            headers={k: v for k, v in rp.headers.items() if k.lower() not in ("content-length", "content-encoding", "transfer-encoding")},
+            media_type=rp.headers.get("content-type"),
         )
-    return Response(
-        content=rp.content,
-        status_code=rp.status_code,
-        media_type=rp.headers.get("content-type"),
-    )
+    except Exception as e:
+        return Response(
+            content=f'{{"detail": "Gateway proxy error: {str(e)}"}}',
+            status_code=502,
+            media_type="application/json"
+        )
 
 @app.get("/")
 def root():
@@ -84,4 +92,3 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8080))
     uvicorn.run("gateway:app", host="0.0.0.0", port=port, reload=True)
-
