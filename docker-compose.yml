@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - COURSE_API_URL=http://courseapi:8001
+      - STUDENT_API_URL=http://studentapi:8002
+      - SCHEDULER_API_URL=http://schedulerapi:8000
+      - AI_ASSISTANT_API_URL=http://ai-assistant-api:8003
+    depends_on:
+      - courseapi
+      - studentapi
+      - schedulerapi
+      - ai-assistant-api
+
+  courseapi:
+    build:
+      context: ./courseapi
+    environment:
+      - DATABASE_URL=sqlite:////app/course.db
+    ports:
+      - "8001:8001"
+
+  studentapi:
+    build:
+      context: ./studentapi
+    environment:
+      - DATABASE_URL=sqlite:////app/student.db
+    ports:
+      - "8002:8002"
+
+  schedulerapi:
+    build:
+      context: ./schedulerapi
+    environment:
+      - DATABASE_URL=sqlite:////app/scheduler.db
+      - COURSE_API_URL=http://courseapi:8001
+      - STUDENT_API_URL=http://studentapi:8002
+      - AI_ASSISTANT_API_URL=http://ai-assistant-api:8003
+    ports:
+      - "8000:8000"
+
+  ai-assistant-api:
+    build:
+      context: ./ai-assistant-api
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-your_gemini_api_key_here}
+    ports:
+      - "8003:8003"
+
