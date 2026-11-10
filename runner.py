@@ -18,13 +18,19 @@ SERVICES = [
         "name": "courseapi",
         "dir": str(BASE_DIR / "courseapi"),
         "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8001"],
-        "env": {"DATABASE_URL": f"sqlite:///{course_db_path}"}
+        "env": {
+            "DATABASE_URL": f"sqlite:///{course_db_path}",
+            "PYTHONPATH": str(BASE_DIR / "courseapi")
+        }
     },
     {
         "name": "studentapi",
         "dir": str(BASE_DIR / "studentapi"),
         "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8002"],
-        "env": {"DATABASE_URL": f"sqlite:///{student_db_path}"}
+        "env": {
+            "DATABASE_URL": f"sqlite:///{student_db_path}",
+            "PYTHONPATH": str(BASE_DIR / "studentapi")
+        }
     },
     {
         "name": "schedulerapi",
@@ -34,14 +40,17 @@ SERVICES = [
             "DATABASE_URL": f"sqlite:///{scheduler_db_path}",
             "COURSE_API_URL": "http://127.0.0.1:8001",
             "STUDENT_API_URL": "http://127.0.0.1:8002",
-            "AI_ASSISTANT_API_URL": "http://127.0.0.1:8003"
+            "AI_ASSISTANT_API_URL": "http://127.0.0.1:8003",
+            "PYTHONPATH": str(BASE_DIR / "schedulerapi")
         }
     },
     {
         "name": "ai-assistant-api",
         "dir": str(BASE_DIR / "ai-assistant-api"),
         "cmd": [sys.executable, "-m", "uvicorn", "src.main:app", "--host", "127.0.0.1", "--port", "8003"],
-        "env": {}
+        "env": {
+            "PYTHONPATH": str(BASE_DIR / "ai-assistant-api")
+        }
     }
 ]
 
@@ -51,13 +60,13 @@ def start_services():
     for s in SERVICES:
         env = os.environ.copy()
         env.update(s["env"])
-        print(f"Starting {s['name']} in {s['dir']}...")
+        print(f"Starting {s['name']} with PYTHONPATH={s['env']['PYTHONPATH']}...", flush=True)
         p = subprocess.Popen(s["cmd"], cwd=s["dir"], env=env)
         processes.append((s["name"], p))
-    time.sleep(3)
+    time.sleep(4)
 
 def cleanup(*args):
-    print("Shutting down microservices...")
+    print("Shutting down microservices...", flush=True)
     for name, p in processes:
         try:
             p.terminate()
@@ -71,5 +80,5 @@ if __name__ == "__main__":
     start_services()
 
     port = int(os.environ.get("PORT", 8080))
-    print(f"Starting unified Gateway on port {port}...")
+    print(f"Starting unified Gateway on port {port}...", flush=True)
     uvicorn.run(app, host="0.0.0.0", port=port)
