@@ -9,7 +9,7 @@ app = FastAPI(
     description="Unified API Gateway routing to SCS microservices.",
 )
 
-# Enable CORS for all origins, methods, and headers
+# Enable CORS for Vercel, GitHub Pages, or any client domain
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,11 +54,13 @@ def root():
     return {
         "service": "Smart Course Scheduler API Gateway",
         "status": "online",
+        "build": "v1.0.4",
         "routes": [
             "/api/v1/courses",
             "/api/v1/students",
             "/api/v1/scheduler",
             "/api/v1/analyze",
+            "/diag",
             "/health",
             "/docs"
         ]
@@ -67,6 +69,25 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/diag")
+async def diagnostic():
+    """Diagnostic endpoint to inspect health of all background microservices."""
+    results = {}
+    endpoints = {
+        "courseapi": f"{COURSE_API_URL}/health",
+        "studentapi": f"{STUDENT_API_URL}/health",
+        "schedulerapi": f"{SCHEDULER_API_URL}/health",
+        "ai-assistant-api": f"{AI_ASSISTANT_API_URL}/health",
+    }
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        for name, url in endpoints.items():
+            try:
+                r = await client.get(url)
+                results[name] = {"status_code": r.status_code, "body": r.json() if r.headers.get("content-type", "").startswith("application/json") else r.text}
+            except Exception as e:
+                results[name] = {"error": str(e)}
+    return results
 
 # 1. Course Service Proxy
 @app.api_route("/api/v1/courses{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
