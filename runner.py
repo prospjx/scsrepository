@@ -52,20 +52,15 @@ SERVICES = [
 processes = []
 
 def start_services():
+    launcher = str(BASE_DIR / "start_service.py")
     for s in SERVICES:
         env = os.environ.copy()
         env.update(s["env"])
         log_file = open(f"/app/{s['name']}.log", "w", buffering=1)
         cmd = [
             sys.executable,
-            "-m",
-            "uvicorn",
-            "--app-dir",
+            launcher,
             s["app_dir"],
-            "src.main:app",
-            "--host",
-            "0.0.0.0",
-            "--port",
             s["port"]
         ]
         print(f"Starting {s['name']} on port {s['port']}...", flush=True)

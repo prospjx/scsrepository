@@ -18,6 +18,7 @@ COPY studentapi /app/studentapi
 COPY schedulerapi /app/schedulerapi
 COPY ai-assistant-api /app/ai-assistant-api
 COPY gateway.py /app/gateway.py
+COPY start_service.py /app/start_service.py
 COPY runner.py /app/runner.py
 
 ENV PORT=8080
