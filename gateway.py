@@ -1,5 +1,6 @@
 import os
 import httpx
+from pathlib import Path
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,7 +10,6 @@ app = FastAPI(
     description="Unified API Gateway routing to SCS microservices.",
 )
 
-# Enable CORS for Vercel, GitHub Pages, or any client domain
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,13 +54,14 @@ def root():
     return {
         "service": "Smart Course Scheduler API Gateway",
         "status": "online",
-        "build": "v1.0.4",
+        "build": "v1.0.5",
         "routes": [
             "/api/v1/courses",
             "/api/v1/students",
             "/api/v1/scheduler",
             "/api/v1/analyze",
             "/diag",
+            "/diag-logs",
             "/health",
             "/docs"
         ]
@@ -72,7 +73,6 @@ def health():
 
 @app.get("/diag")
 async def diagnostic():
-    """Diagnostic endpoint to inspect health of all background microservices."""
     results = {}
     endpoints = {
         "courseapi": f"{COURSE_API_URL}/health",
@@ -88,6 +88,18 @@ async def diagnostic():
             except Exception as e:
                 results[name] = {"error": str(e)}
     return results
+
+@app.get("/diag-logs")
+def diagnostic_logs():
+    """Returns the live stdout/stderr of each background service for instant debugging."""
+    logs = {}
+    for name in ["courseapi", "studentapi", "schedulerapi", "ai-assistant-api"]:
+        log_file = Path(f"/app/{name}.log")
+        if log_file.exists():
+            logs[name] = log_file.read_text(encoding="utf-8", errors="replace")[-2000:]
+        else:
+            logs[name] = "Log file not found."
+    return logs
 
 # 1. Course Service Proxy
 @app.api_route("/api/v1/courses{path:path}", methods=["GET", "POST", "PUT", "DELETE"])

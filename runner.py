@@ -55,6 +55,7 @@ def start_services():
     for s in SERVICES:
         env = os.environ.copy()
         env.update(s["env"])
+        log_file = open(f"/app/{s['name']}.log", "w", buffering=1)
         cmd = [
             sys.executable,
             "-m",
@@ -63,20 +64,21 @@ def start_services():
             s["app_dir"],
             "src.main:app",
             "--host",
-            "127.0.0.1",
+            "0.0.0.0",
             "--port",
             s["port"]
         ]
-        print(f"Starting {s['name']} on port {s['port']} with --app-dir {s['app_dir']}...", flush=True)
-        p = subprocess.Popen(cmd, cwd=s["app_dir"], env=env)
-        processes.append((s["name"], p))
-    time.sleep(4)
+        print(f"Starting {s['name']} on port {s['port']}...", flush=True)
+        p = subprocess.Popen(cmd, cwd=s["app_dir"], env=env, stdout=log_file, stderr=subprocess.STDOUT)
+        processes.append((s["name"], p, log_file))
+    time.sleep(5)
 
 def cleanup(*args):
     print("Shutting down microservices...", flush=True)
-    for name, p in processes:
+    for name, p, lf in processes:
         try:
             p.terminate()
+            lf.close()
         except Exception:
             pass
     sys.exit(0)
