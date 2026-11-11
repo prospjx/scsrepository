@@ -26,7 +26,10 @@ def _get_genai_client() -> genai.Client:
             "GEMINI_API_KEY is not set or still has the placeholder value. "
             "Please add your actual Gemini API key to your .env file."
         )
-    return genai.Client(api_key=GEMINI_API_KEY)
+    return genai.Client(
+        api_key=GEMINI_API_KEY,
+        http_options=types.HttpOptions(api_version="v1beta"),
+    )
 
 
 async def generate_ai_insights(
